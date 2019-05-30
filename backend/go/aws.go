@@ -1,0 +1,5 @@
+package gofaas
+
+var (
+   DUMMY = ""
+)

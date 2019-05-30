@@ -1,0 +1,382 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: '[ <%SEMVER%> ] - Slack Invitation App in Vue.JS'
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: slack-invite
+    Description: '[ <%SEMVER%> ] - Slack Invitation App in Vue.JS
+    
+    Including ReCaptcha validations and customizations.
+    '
+    Author: 'ACenterA'
+    LicenseUrl: LICENSE
+    ReadmeUrl: README.md
+    SpdxLicenseId: MIT
+    Labels: ['slack', 'slack-invite','acentera','plugins']
+    HomePageUrl: https://acentera.com/
+    SemanticVersion: <%SEMVER%>
+    SourceCodeUrl: https://github.com/ACenterA/acentera-aws-slack-invite-vuejs
+
+Outputs:
+
+  AccountId:
+    Value:
+     Fn::Sub: "${AWS::AccountId}"
+    Description: The AccountId for Bootstrap
+
+  WebsiteUrl:
+    Value: 
+       Fn::Sub: "https://${ServerlessCloudfront.DomainName}/"
+    Description: The Admin Panel Default Url
+
+  ApiUrl:
+    Value: 
+      Fn::Sub: "https://${PluginRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
+    Description: The API Url
+
+Parameters:
+
+    SiteTitle:
+      Type: String
+      Default: ''
+      Description: Slack Invite
+
+    RecaptchaSiteKey:
+      Type: String
+      Description: ReCaptchaV2 Site Key
+
+    RecaptchaSecret:
+      Type: String
+      Description: ReCaptchaV2 Secret Key
+
+    SlackOauthToken:
+      Type: String
+      Description: Slack OAuth Admin Token
+
+    SlackTeam:
+      Type: String
+      Description: Slack Team Id
+
+    SlackInviteChannel:
+      Type: String
+      Default: ''
+      Description: 'Slack Channel Id (ie: C1234567890)'
+
+    BackgroundImage:
+      Type: String
+      Default: ''
+      Description: 'An public image url ie: (https://github.com/.../raw/master/...jpg)'
+
+    HtmlTextColor:
+      Type: String
+      Default: 'black'
+      Description: 'The Text Color'
+
+    SlackInviteTitle:
+      Type: String
+      Default: 'Join our Slack Team'
+      Description: 'The H1 Text'
+
+    SlackInviteMessage:
+      Type: String
+      Default: 'We cannot wait to talk with you.'
+      Description: 'Text under the H1 Title'
+
+Globals:
+  Api:
+    Cors:
+      AllowHeaders: "'X-Version, Accept, Authorization, Content-Type'"
+      AllowMethods: "'GET, POST, OPTIONS, HEAD'"
+#      AllowOrigin: "'www.example.com'"
+
+    EndpointConfiguration: REGIONAL
+    BinaryMediaTypes:
+      # These are equivalent to image/gif and image/png when deployed
+      - image~1*
+      - image~1gif
+      - image~1png
+      - image~1jpeg
+      - image~1jpg
+
+  Function:
+    Environment:
+      Variables:
+        REGION: 
+          Fn::Sub: "${AWS::Region}"
+        PLUGIN_NAME: "<%PLUGIN_NAME%>"
+        SITE_TITLE:
+           Ref: SiteTitle
+        RECAPTCHA_SITE_KEY:
+           Ref: RecaptchaSiteKey
+        RECAPTCHA_SECRET:
+           Ref: RecaptchaSecret
+        SLACK_OAUTH_TOKEN:
+           Ref: SlackOauthToken
+        SLACK_TEAM:
+           Ref: SlackTeam
+        SLACK_CHANNEL:
+           Ref: SlackInviteChannel
+        BACKGROUND_IMAGE:
+           Ref: BackgroundImage
+        SLACK_INVITE_TITLE:
+           Ref: SlackInviteTitle
+        SLACK_INVITE_MESSAGE:
+           Ref: SlackInviteMessage
+        HTML_TEXT_COLOR:
+           Ref: HtmlTextColor
+
+    Handler: main
+    Runtime: go1.x
+    Timeout: 60
+
+Resources:
+
+  PluginRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowHeaders: "'X-Version, Accept, Authorization, Content-Type'"
+        AllowMethods: "'GET, POST, OPTIONS, HEAD'"
+  #      AllowOrigin: "'www.example.com'"
+
+      EndpointConfiguration: REGIONAL
+      BinaryMediaTypes:
+        # These are equivalent to image/gif and image/png when deployed
+        - image~1*
+        - image~1gif
+        - image~1png
+        - image~1jpeg
+        - image~1jpg
+
+  ApiApp:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./handlers/app
+      Timeout: 60
+      Events:
+        GetRequest:
+          Properties:
+            Method: GET
+            Path: /api/{proxy+}
+            RestApiId: 
+              Ref: PluginRestApi
+          Type: Api
+        PostRequest:
+          Properties:
+            Method: POST
+            Path: /api/{proxy+}
+            RestApiId: 
+              Ref: PluginRestApi
+          Type: Api
+        PutRequest:
+          Properties:
+            Method: PUT
+            Path: /api/{proxy+}
+            RestApiId: 
+              Ref: PluginRestApi
+          Type: Api
+        DeleteRequest:
+          Properties:
+            Method: DELETE
+            Path: /api/{proxy+}
+            RestApiId: 
+              Ref: PluginRestApi
+          Type: Api
+      Runtime: go1.x
+
+  ApiPluginSettings:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./handlers/app
+      Timeout: 60
+      Events:
+        GetSettings:
+          Properties:
+            Method: GET
+            Path: /api/settings
+            RestApiId: 
+              Ref: PluginRestApi
+          Type: Api
+
+      Runtime: go1.x
+
+  # # # # # # # # # # # # # # # # #
+  # Publicly accessible endpoints #
+  # # # # # # # # # # # # # # # # #
+  #TODO: Enable anonymous sessions ie: to support carts for guests
+  PublicWebsite:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./handlers/app
+      Timeout: 30
+      Environment:
+        Variables:
+          TYPE: "WEBSITE"
+      Events:
+        Request:
+          Type: Api
+          Properties:
+            Method: GET
+            RestApiId: 
+              Ref: PluginRestApi
+            Path: /api/static/{proxy+}
+      FunctionName: 
+          Fn::Sub: "acentera-${AWS::StackName}-PublicWebsite"
+      Runtime: go1.x
+
+# # # # # # # # # # # # # # # # # # #
+# Cloud Front configuration         #
+# # # # # # # # # # # # # # # # # # #
+  ServerlessCloudfront:
+     Type: AWS::CloudFront::Distribution
+     DependsOn:
+        - PluginRestApi
+     Properties:
+       DistributionConfig:
+         Comment: Cloudfront Distribution pointing to api gateway static page
+         Enabled: true
+         HttpVersion: 'http2'
+         DefaultRootObject: index.html
+         # Aliases:
+         # - !Ref 'FullDomainName'
+         IPV6Enabled: true
+         DefaultCacheBehavior:
+           AllowedMethods:
+           - GET
+           - HEAD
+           - OPTIONS
+           Compress: true
+           TargetOriginId: Static
+           ForwardedValues:
+             QueryString: true
+             Cookies:
+               Forward: none
+             Headers: #define explicit headers, since API Gateway doesn't work otherwise
+               - Accept
+               - Content-Type
+           ViewerProtocolPolicy: redirect-to-https
+         CacheBehaviors: #second the behavior for the API Gateway
+           - AllowedMethods: #allow all method for the backend to implement
+               - GET
+               - HEAD
+               - OPTIONS
+             CachedMethods: #cache only on get requests
+               - GET
+               - HEAD
+               - OPTIONS
+             DefaultTTL: 60
+             MinTTL: 60
+             MaxTTL: 300
+             Compress: true
+             ForwardedValues:
+               Headers: #define explicit headers, since API Gateway doesn't work otherwise
+                 - Accept
+                 - Referer
+                 - Athorization
+                 - Content-Type
+                 - Access-Control-Allow-Headers
+               QueryString: true #to transfer get parameters to the gateway
+             PathPattern: 
+                Fn::Sub: "/static/*" # Path pattern after the Gateway stage identifier.
+             TargetOriginId:
+                Fn::Sub: "Static"
+             ViewerProtocolPolicy: https-only #API Gateway only support https
+ 
+           - AllowedMethods: #allow all method for the backend to implement
+               - GET
+               - HEAD
+               - OPTIONS
+             CachedMethods: #cache only on get requests
+               - GET
+               - HEAD
+               - OPTIONS
+             DefaultTTL: 60
+             MinTTL: 60
+             MaxTTL: 300
+             Compress: true
+             ForwardedValues:
+               Headers: #define explicit headers, since API Gateway doesn't work otherwise
+                 - Accept
+                 - Referer
+                 - Athorization
+                 - Content-Type
+                 - Access-Control-Allow-Headers
+               QueryString: true #to transfer get parameters to the gateway
+             PathPattern: 
+                Fn::Sub: "/static*" #path pattern after the Gateway stage identifier.
+             TargetOriginId: 
+                Fn::Sub: "Static"
+             ViewerProtocolPolicy: https-only #API Gateway only support https
+ 
+           - AllowedMethods: #allow all method for the backend to implement
+               - DELETE
+               - GET
+               - HEAD
+               - OPTIONS
+               - PATCH
+               - POST
+               - PUT
+             CachedMethods: #cache only on get requests
+               - GET
+               - HEAD
+               - OPTIONS
+             DefaultTTL: 0
+             MinTTL: 0
+             MaxTTL: 0
+             Compress: true
+             ForwardedValues:
+               Headers: #define explicit headers, since API Gateway doesn't work otherwise
+                 - Accept
+                 - Referer
+                 - Athorization
+                 - Content-Type
+                 - Token
+                 - Access-Control-Allow-Headers
+                 - X-Token
+               QueryString: true #to transfer get parameters to the gateway
+             PathPattern: 
+                Fn::Sub: "/api/*" #path pattern after the Gateway stage identifier.
+             TargetOriginId: 
+                Fn::Sub: "Plugin-<%PLUGIN_NAME%>-Api"
+             ViewerProtocolPolicy: https-only #API Gateway only support https
+ 
+         Origins:
+           # Warning ordering is important.
+           # Add plugin first then add the default core api's
+           # Add Current API Gateway Plugin
+           # This also serves the static endpoints..
+           - DomainName: 
+                Fn::Sub:
+                   - "${RESTAPI}.execute-api.${AWS::Region}.amazonaws.com"
+                   - RESTAPI: 
+                       Ref: PluginRestApi
+             Id:
+               Fn::Sub: "Plugin-<%PLUGIN_NAME%>-Api"
+ 
+             CustomOriginConfig:
+               OriginReadTimeout: 60
+               OriginProtocolPolicy: https-only
+             OriginCustomHeaders:
+               - HeaderName: "X-Plugin"
+                 HeaderValue: "<%PLUGIN_NAME%>"
+             OriginPath: "/Prod"
+           - DomainName: 
+                Fn::Sub:
+                   - "${RESTAPI}.execute-api.${AWS::Region}.amazonaws.com"
+                   - RESTAPI: 
+                       Ref: PluginRestApi
+             Id: "Static"
+             CustomOriginConfig:
+               OriginReadTimeout: 60
+               OriginProtocolPolicy: https-only
+             OriginCustomHeaders:
+               - HeaderName: "X-Plugin"
+                 HeaderValue: "<%PLUGIN_NAME%>"
+             OriginPath: "/Prod/api/static"
+         PriceClass: PriceClass_100
+       Tags:
+         - Key: 'acentera:id'
+           Value: 
+             Fn::Sub: '<%PLUGIN_NAME%>'
