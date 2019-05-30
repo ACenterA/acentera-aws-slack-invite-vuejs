@@ -162,13 +162,13 @@ export default {
       const self = this
       self.status = 'submitting'
       self.$refs.recaptcha.reset()
-      this.$store.dispatch('SlackSignup', {
+      self.$store.dispatch('SlackSignup', {
         email: self.slackInviteForm.email,
         recaptchaToken: recaptchaToken
       }).then(function(response) {
         self.$notify({
-          title: this.$t('slack.invite.title'),
-          message: this.$t('slack.invite.success'),
+          title: self.$t('slack.invite.title'),
+          message: self.$t('slack.invite.success'),
           type: 'success',
           duration: 2000
         })
@@ -190,9 +190,9 @@ export default {
         if (msg === 'slack.error.already_invited') {
           self.status = 'success'
         }
-        this.$notify({
-          title: this.$t('slack.invite.title'),
-          message: this.$t(msg),
+        self.$notify({
+          title: self.$t('slack.invite.title'),
+          message: self.$t(msg),
           type: self.status,
           duration: 2000
         })
