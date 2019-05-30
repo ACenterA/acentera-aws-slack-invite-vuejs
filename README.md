@@ -82,4 +82,4 @@ By using this UI, we would like that any application which incorporates it shall
 
 # Thanks
 
-[Default Background Image](https://www.pexels.com/photo/mountain-under-starry-sky-1624504/) taken from Pexels.com
+[Default Background Image](https://www.pexels.com/photo/blue-and-purple-cosmic-sky-956999/) taken from Pexels.com

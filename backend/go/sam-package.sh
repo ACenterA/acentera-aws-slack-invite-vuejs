@@ -6,7 +6,7 @@ PROGNAME=$(basename -- "${0}")
 PROJROOT=$(d=$(dirname -- "${0}"); cd "${d}/.." && pwd)
 
 DT=$(date +%Y)
-SEMVER=0.0.15
+SEMVER=0.0.16
 S3PREFIX="packaged/$DT/0.0.1/acentera-${PLUGINNAME}"
 BUCKETNAME=${S3_BUCKET:-"lambda-at-edge-dev-serverlessdeploymentbucket-1gmbbmp4ajnba"}
 
