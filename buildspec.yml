@@ -1,0 +1,40 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+        docker: 18
+
+    commands:
+      - if [ ! -e node_modules/webpack ]; then npm install; fi;
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...          
+      - npm ci 2>&1
+      - npm build:prod 2>&1
+      - echo Run make template
+      - docker-compose -f docker-compose.yml run -T slack-invite make template
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+
+cache:
+  paths:
+    - 'node_modules/**/*'
+
+artifacts:
+  files: 
+    - '**/output.yml'
+  base-directory: 'backend/go*'
+  discard-paths: yes
+

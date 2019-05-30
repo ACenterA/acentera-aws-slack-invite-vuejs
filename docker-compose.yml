@@ -1,0 +1,76 @@
+version: '3.7'
+services:
+
+  slack-invite-vue:
+    build:
+      context: .
+    volumes:
+      - .:/usr/app/
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+      - ./backend/go/customvendors/static:/customvendors/static
+    environment:
+       HOST: 0.0.0.0
+       PORT: 80
+       DEV_ACCOUNTID: ${DEV_ACCOUNTID}
+       ENV_CONFIG: ${ENV_CONFIG}
+    networks:
+      backend:
+        aliases:
+          - slack-invite-vue
+    ports:
+      - "127.0.0.1:80:80"
+
+  slack-invite:
+    build: 
+       context: backend/go/.
+    volumes:
+      - ./backend/go/:/go/src/github.com/myplugin/gofaas
+      - ./README.md:/go/src/github.com/myplugin/gofaas/README.md:ro
+      - ./LICENSE:/go/src/github.com/myplugin/gofaas/LICENSE:ro
+      - ./go/shared:${PWD}/backend/go/shared
+      - ./backend/go/customvendors/static:/go/src/github.com/acenterastatic/static
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    networks:
+      backend:
+        aliases:
+          - slack-invite
+          - core
+    env_file:
+       - .env
+    environment:
+      - AWS_SECRET_ACCESS_KEY="a"
+      - DOCKER_NETWORK=${COMPOSE_PROJECT_NAME}_backend
+      - DISPLAY
+      - PLUGINNAME=${PLUGIN_NAME}
+      - PLUGIN_NAME
+      - PluginName=${PLUGIN_NAME}
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION=us-east-1
+      - S3_BUCKET
+      - AWS_CONTAINER_CREDENTIALS_RELATIVE_URI
+      - AWS_EXECUTION_ENV
+      - AWS_DEFAULT_REGION
+      - AWS_REGION
+      - HOME_PWD=${PWD}/backend/go/
+    ports:
+      - "3003:3000"
+      - "3001:3000"
+    command: |
+       make dev
+
+  proxy:
+    image: acentera/prod:acentera-aws-core-proxy-0.0.1
+    env_file:
+       - .env
+    networks:
+      backend:
+        aliases:
+          - proxy
+    ports:
+      - "127.0.0.1:2000:2000"
+       
+networks:
+    backend:
+      name: ${COMPOSE_PROJECT_NAME}_backend
+
