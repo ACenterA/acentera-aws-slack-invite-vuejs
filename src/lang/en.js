@@ -11,7 +11,7 @@ export default {
       not_allowed_token_type: 'Token is not allowed',
       invite_limit_reached: 'Maximum invite limit reached',
       requires_one_channel: 'One channel is required.',
-      user_disabled: 'The email address used is disabled for this team',
+      user_disabled: 'The email address used is disabled for this team'
     },
     invite: {
       config: 'Slack Invite Config',

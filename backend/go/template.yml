@@ -48,10 +48,12 @@ Parameters:
 
     RecaptchaSecret:
       Type: String
+      NoEcho: True
       Description: ReCaptchaV2 Secret Key
 
     SlackOauthToken:
       Type: String
+      NoEcho: True
       Description: Slack OAuth Admin Token
 
     SlackTeam:

@@ -43,7 +43,7 @@ Using Docker Compose only
 
 # Launching using AWS Serverless Repo
 
-Once you have deployed the serverless repo through the Serverless Repository, you should have a Cloudfront distributin created.
+Once you have deployed the serverless repo through the Serverless Repository, you should have a Cloudfront distribution created.
 
 You may visit the *aws cloudformation* and you will find in the the stack output the cloudfront WebsiteUrl.
 
@@ -79,3 +79,7 @@ The software is licensed under the MIT license.
 
 # Attribution
 By using this UI, we would like that any application which incorporates it shall prominently display the message “Made with ACenterA” in a legible manner in the footer of the admin console. This message must open a link to acentera.com when clicked or touched.
+
+# Thanks
+
+[Default Background Image](https://www.pexels.com/photo/mountain-under-starry-sky-1624504/) taken from Pexels.com

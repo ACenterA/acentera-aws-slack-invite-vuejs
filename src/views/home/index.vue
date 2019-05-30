@@ -1,6 +1,6 @@
 <template>
-  <div :style="[custom_style]" class="app-container">
-    <div v-if="status == 'success' "class="title-container">
+  <div :style="[custom_style]" class="app-container bg">
+    <div v-if="status === 'success'" class="title-container">
       <div class="title-container">
         <h3 class="title"> {{ invite_success }} </h3>
         <a v-if="slack_url" :href="slack_url">{{ slack_url }}</a>
@@ -13,35 +13,36 @@
       <p> {{ invite_message }} </p>
       <el-form ref="slackInviteForm" :model="slackInviteForm" :rules="slackInviteRules" class="login-form" auto-complete="on" label-position="left" @submit.prevent.native="">
         <el-form-item prop="email">
-            <span class="svg-container">
-              <svg-icon icon-class="user" />
-            </span>
-            <el-input
-              ref="email"
-              v-model="slackInviteForm.email"
-              placeholder="email@example.com"
-              name="email"
-              type="text"
-              tabindex="1"
-              auto-complete="on"
-              @keyup.enter.native="handleSlackInvite"
-            />
-          </el-form-item>
+          <span class="svg-container">
+            <svg-icon icon-class="user" />
+          </span>
+          <el-input
+            ref="email"
+            v-model="slackInviteForm.email"
+            placeholder="email@example.com"
+            name="email"
+            type="text"
+            tabindex="1"
+            auto-complete="on"
+            @keyup.enter.native="handleSlackInvite"
+          />
+        </el-form-item>
 
-          <div v-if="isLoaded()">
-            <vue-recaptcha 
-              ref="recaptcha"
-              v-if="settings.recaptchaSiteKey !== ''"
-              :sitekey="settings.recaptchaSiteKey"
-              @verify="onCaptchaVerified"
-              @expired="onCaptchaExpired"
-              size="invisible"/>
-          </div>
-    
-          <el-button :loading="loading" :disabled="!isLoaded()" type="primary" style="width:100%;margin-bottom:30px;margin-top:15px;" @click.native.prevent="handleSlackInvite">{{ $t('slack.invite.submit' ) }}</el-button>
+        <div v-if="isLoaded()">
+          <vue-recaptcha
+            v-if="settings.recaptchaSiteKey !== ''"
+            ref="recaptcha"
+            :sitekey="settings.recaptchaSiteKey"
+            size="invisible"
+            @verify="onCaptchaVerified"
+            @expired="onCaptchaExpired"/>
+        </div>
 
-        </el-form>
-      </div>
+        <el-button :loading="loading" :disabled="!isLoaded()" type="primary" style="width:100%;margin-bottom:30px;margin-top:15px;" @click.native.prevent="handleSlackInvite">{{ $t('slack.invite.submit' ) }}</el-button>
+
+      </el-form>
+    </div>
+    <div class="powered_by">Made possible by <a href="https://acentera.com/">ACenterA</a></div>
   </div>
 </template>
 
@@ -71,30 +72,13 @@ export default {
         email: ''
       },
       slackInviteRules: {
-        email: [{ required: true, trigger: 'blur', validator: validateEmailValidator }],
+        email: [{ required: true, trigger: 'blur', validator: validateEmailValidator }]
       },
       status: 'pending',
       sucessfulServerResponse: '',
       serverError: '',
       loading: false
     }
-  },
-  created() {
-    store.dispatch('GetSiteSettings').then(function(r) {
-      // All good, wee got everything we needed
-    }).catch((err) => {
-      console.error(err)
-      var errorMsg = 'slack.invite.network_error'
-      if (err && err.data && err.data.message) {
-        errorMsg = err.data.message.replace(/ /g,'.')
-      }
-      this.$notify({
-        title: this.$t('slack.invite.config'),
-        message: this.$t(errorMsg),
-        type: 'error',
-        duration: 2000
-      })
-    })
   },
   computed: {
     ...mapGetters([
@@ -141,11 +125,30 @@ export default {
       if (this.settings.HtmlTextColor) {
         style['color'] = this.settings.HtmlTextColor
       }
-      if (this.settings.backgroundImage) {
+      if (this.settings.backgroundImage !== '') {
         style['background-image'] = 'url("' + this.settings.backgroundImage + '")'
+      } else {
+        style['background-image'] = 'url("/static/img/background.jpg")'
       }
       return style
     }
+  },
+  created() {
+    this.$store.dispatch('GetSiteSettings').then(function(r) {
+      // All good, wee got everything we needed
+    }).catch((err) => {
+      console.error(err)
+      var errorMsg = 'slack.invite.network_error'
+      if (err && err.data && err.data.message) {
+        errorMsg = err.data.message.replace(/ /g, '.')
+      }
+      this.$notify({
+        title: this.$t('slack.invite.config'),
+        message: this.$t(errorMsg),
+        type: 'error',
+        duration: 2000
+      })
+    })
   },
   methods: {
     ...mapGetters([
@@ -183,13 +186,14 @@ export default {
         if (responseBody.error) {
           msg = 'slack.error.' + msg
         }
-        if (msg == 'slack.error.already_invited') {
+        self.sttatus = 'error'
+        if (msg === 'slack.error.already_invited') {
           self.status = 'success'
         }
         this.$notify({
           title: this.$t('slack.invite.title'),
           message: this.$t(msg),
-          type: 'error',
+          type: self.status,
           duration: 2000
         })
       })
@@ -200,3 +204,13 @@ export default {
   }
 }
 </script>
+
+<style>
+.bg {
+  background: no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  o-background-size: cover;
+}
+</style>

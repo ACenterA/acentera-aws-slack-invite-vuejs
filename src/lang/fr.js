@@ -11,7 +11,7 @@ export default {
       not_allowed_token_type: 'Le Tokene n\'est pas valid',
       invite_limit_reached: 'Nombre maximal d\'invitation atteint',
       requires_one_channel: 'Un channel est requis',
-      user_disabled: 'L\'addresse email est désactivé pour ce slack team',
+      user_disabled: 'L\'addresse email est désactivé pour ce slack team'
     },
     invite: {
       config: 'Configuration slack',

@@ -15,7 +15,7 @@ const app = {
           if (response && response.data) {
             resolve(response)
           } else {
-            reject(rsponse)
+            reject(response)
           }
         }).catch((err) => {
           reject(err)

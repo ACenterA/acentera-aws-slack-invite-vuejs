@@ -5,8 +5,7 @@ const settings = {
   state: {
     isLoaded: false,
     allowRegister: false,
-    recaptchaSecret: '',
-    recaptchaSiteKey: '', 
+    recaptchaSiteKey: '',
     inviteToken: '',
     slackToken: '',
     backgroundImage: '',
@@ -29,9 +28,6 @@ const settings = {
     }
   },
   mutations: {
-    SET_RECAPCHA_SECRET: (state, recaptchaKey) => {
-      state.recaptchaSecret = recaptchaSecret
-    },
     SET_RECAPCHA_SITE_KEY: (state, recaptchaSiteKey) => {
       state.recaptchaSiteKey = recaptchaSiteKey
     },
@@ -59,7 +55,7 @@ const settings = {
     SET_SLACK_INVITE_MESSAGE: (state, msg) => {
       state.SlackInviteMessage = msg
     },
-    SET_BACKGROUND_IMAGE:(state, backgroundImage) => {
+    SET_BACKGROUND_IMAGE: (state, backgroundImage) => {
       state.backgroundImage = backgroundImage
     },
     SET_HTML_TEXT_COLOR: (state, color) => {
@@ -70,7 +66,7 @@ const settings = {
     },
     SET_SLACK_INVITE_TITLE: (state, title) => {
       state.SlackInviteTitle = title
-    },
+    }
   },
   actions: {
     UpdateSiteSettings({ commit, state }, input) {
@@ -84,7 +80,7 @@ const settings = {
       commit('SET_SLACK_INVITE_SUCCESS', data.SlackInviteSuccess)
       commit('SET_BACKGROUND_IMAGE', data.BackgroundImage)
       commit('SET_HTML_TEXT_COLOR', data.HtmlTextColor)
-      
+
       // commit('SET_COMMUNITY_NAME', data.communityName)
       // commit('SET_SITE_TITLE', data.SiteTitle)
       // TODO: commit('SET_LOCALE', data.locale)

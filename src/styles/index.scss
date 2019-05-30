@@ -130,6 +130,7 @@ code {
 
 .app-container {
   padding: 20px;
+  padding-top: 10%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -202,4 +203,11 @@ code {
 }
 .is-hidden {
   display: none;
+}
+.powered_by {
+  position:absolute;
+  justify-content: flex-end;
+  margin-left: auto;
+  right: 10px;
+  top: 95%;
 }
